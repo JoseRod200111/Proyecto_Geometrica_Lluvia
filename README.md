@@ -503,6 +503,10 @@ Por esta razón, el modelo geométrico no pretende realizar un pronóstico meteo
 ## Autor
 
 José Roberto Rodríguez Reyes
+Alejandro Rivera Rodríguez 
+Juan Marcos Cruz Melara 
+José Pablo Ordoñez Barrios 
+Carlos Daniel Estrada Vega 
 
 Universidad del Valle de Guatemala  
 Ciencias de la Computación y Tecnologías de la Información  

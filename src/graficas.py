@@ -14,8 +14,6 @@ from simulacion import simular_mes
 from generadores import (
     generar_muestra_transformada_inversa,
     generar_muestra_lcg,
-    calcular_media,
-    calcular_varianza,
 )
 
 
@@ -229,7 +227,7 @@ def grafica_probabilidad_mensual(
 
 # ============================================================
 # GRÁFICAS 2, 3 Y 4
-# DISTRIBUCIÓN REAL VS MODELO
+# DISTRIBUCIÓN HISTÓRICA VS MODELO
 # ============================================================
 
 def grafica_distribucion_mes(
@@ -248,7 +246,7 @@ def grafica_distribucion_mes(
         "9+"
     )
 
-    real = frecuencias_agrupadas(
+    historica = frecuencias_agrupadas(
         resultado["intervalos_reales"],
         limite
     )
@@ -283,9 +281,9 @@ def grafica_distribucion_mes(
             x - 1.5 * ancho
             for x in posiciones
         ],
-        real,
+        historica,
         width=ancho,
-        label="Datos reales"
+        label="Datos históricos"
     )
 
     plt.bar(
@@ -367,7 +365,7 @@ def grafica_medias(
         for resultado in resultados
     ]
 
-    reales = [
+    historicas = [
         resultado["media_real"]
         for resultado in resultados
     ]
@@ -402,9 +400,9 @@ def grafica_medias(
             x - 1.5 * ancho
             for x in posiciones
         ],
-        reales,
+        historicas,
         width=ancho,
-        label="Real"
+        label="Datos históricos"
     )
 
     plt.bar(
@@ -476,7 +474,7 @@ def grafica_varianzas(
         for resultado in resultados
     ]
 
-    reales = [
+    historicas = [
         resultado["varianza_real"]
         for resultado in resultados
     ]
@@ -511,9 +509,9 @@ def grafica_varianzas(
             x - 1.5 * ancho
             for x in posiciones
         ],
-        reales,
+        historicas,
         width=ancho,
-        label="Real"
+        label="Datos históricos"
     )
 
     plt.bar(
@@ -573,18 +571,22 @@ def grafica_varianzas(
 
 # ============================================================
 # GRÁFICA 7
-# COMPARACIÓN DE RENDIMIENTO DE LOS MÉTODOS
+# COMPARACIÓN DE TIEMPO DE EJECUCIÓN
 # ============================================================
 
 def grafica_rendimiento_metodos():
     """
-    Compara Transformada Inversa y LCG utilizando
-    30 ejecuciones de 100000 observaciones cada una.
+    Compara únicamente el tiempo de ejecución de
+    Transformada Inversa y LCG + ensayos.
 
-    Se muestran:
-        - tiempo promedio
-        - error promedio de la media
-        - error promedio de la varianza
+    Se realizan 30 ejecuciones de 100000 observaciones
+    para julio y se grafica el tiempo promedio de cada
+    método.
+
+    Los errores de media y varianza se reportan en las
+    tablas y en el análisis estadístico, pero no se mezclan
+    con los tiempos en esta gráfica porque representan
+    magnitudes diferentes.
     """
 
     p = 183 / 341
@@ -592,21 +594,8 @@ def grafica_rendimiento_metodos():
     cantidad = 100000
     repeticiones = 30
 
-    media_teorica = 1 / p
-
-    varianza_teorica = (
-        (1 - p)
-        / (p ** 2)
-    )
-
     tiempos_inversa = []
     tiempos_lcg = []
-
-    errores_media_inversa = []
-    errores_media_lcg = []
-
-    errores_varianza_inversa = []
-    errores_varianza_lcg = []
 
     print()
     print(
@@ -625,12 +614,10 @@ def grafica_rendimiento_metodos():
 
         inicio = time.perf_counter()
 
-        muestra_inversa = (
-            generar_muestra_transformada_inversa(
-                p=p,
-                cantidad=cantidad,
-                semilla=semilla
-            )
+        generar_muestra_transformada_inversa(
+            p=p,
+            cantidad=cantidad,
+            semilla=semilla
         )
 
         tiempo = (
@@ -642,40 +629,16 @@ def grafica_rendimiento_metodos():
             tiempo
         )
 
-        media = calcular_media(
-            muestra_inversa
-        )
-
-        varianza = calcular_varianza(
-            muestra_inversa
-        )
-
-        errores_media_inversa.append(
-            abs(
-                media
-                - media_teorica
-            )
-        )
-
-        errores_varianza_inversa.append(
-            abs(
-                varianza
-                - varianza_teorica
-            )
-        )
-
         # ----------------------------------------------------
         # LCG + ENSAYOS
         # ----------------------------------------------------
 
         inicio = time.perf_counter()
 
-        muestra_lcg = (
-            generar_muestra_lcg(
-                p=p,
-                cantidad=cantidad,
-                semilla=semilla
-            )
+        generar_muestra_lcg(
+            p=p,
+            cantidad=cantidad,
+            semilla=semilla
         )
 
         tiempo = (
@@ -685,28 +648,6 @@ def grafica_rendimiento_metodos():
 
         tiempos_lcg.append(
             tiempo
-        )
-
-        media = calcular_media(
-            muestra_lcg
-        )
-
-        varianza = calcular_varianza(
-            muestra_lcg
-        )
-
-        errores_media_lcg.append(
-            abs(
-                media
-                - media_teorica
-            )
-        )
-
-        errores_varianza_lcg.append(
-            abs(
-                varianza
-                - varianza_teorica
-            )
         )
 
     # --------------------------------------------------------
@@ -723,119 +664,55 @@ def grafica_rendimiento_metodos():
         / len(tiempos_lcg)
     )
 
-    error_media_inversa = (
-        sum(errores_media_inversa)
-        / len(errores_media_inversa)
-    )
-
-    error_media_lcg = (
-        sum(errores_media_lcg)
-        / len(errores_media_lcg)
-    )
-
-    error_varianza_inversa = (
-        sum(errores_varianza_inversa)
-        / len(errores_varianza_inversa)
-    )
-
-    error_varianza_lcg = (
-        sum(errores_varianza_lcg)
-        / len(errores_varianza_lcg)
-    )
-
     # ========================================================
     # GRÁFICA
     # ========================================================
 
-    categorias = [
-        "Tiempo\npromedio (s)",
-        "Error medio\nde la media",
-        "Error medio\nde la varianza",
+    metodos = [
+        "Transformada inversa",
+        "LCG + ensayos",
     ]
 
-    inversa = [
+    tiempos = [
         tiempo_inversa,
-        error_media_inversa,
-        error_varianza_inversa,
-    ]
-
-    lcg = [
         tiempo_lcg,
-        error_media_lcg,
-        error_varianza_lcg,
     ]
-
-    posiciones = list(
-        range(len(categorias))
-    )
-
-    ancho = 0.35
 
     plt.figure(
-        figsize=(10, 6)
+        figsize=(8, 6)
     )
 
-    barras_inversa = plt.bar(
-        [
-            x - ancho / 2
-            for x in posiciones
-        ],
-        inversa,
-        width=ancho,
-        label="Transformada inversa"
-    )
-
-    barras_lcg = plt.bar(
-        [
-            x + ancho / 2
-            for x in posiciones
-        ],
-        lcg,
-        width=ancho,
-        label="LCG + ensayos"
-    )
-
-    plt.xticks(
-        posiciones,
-        categorias
+    barras = plt.bar(
+        metodos,
+        tiempos
     )
 
     plt.title(
-        "Comparación promedio de los métodos "
+        "Tiempo promedio de ejecución "
         "(30 ejecuciones)"
     )
 
     plt.ylabel(
-        "Valor promedio"
+        "Tiempo promedio (s)"
     )
-
-    plt.legend()
 
     plt.grid(
         axis="y",
         alpha=0.3
     )
 
-    # Mostrar valores encima de las barras
-    for barras in [
-        barras_inversa,
-        barras_lcg
-    ]:
+    for barra in barras:
 
-        for barra in barras:
+        altura = barra.get_height()
 
-            altura = (
-                barra.get_height()
-            )
-
-            plt.text(
-                barra.get_x()
-                + barra.get_width() / 2,
-                altura,
-                f"{altura:.4f}",
-                ha="center",
-                va="bottom"
-            )
+        plt.text(
+            barra.get_x()
+            + barra.get_width() / 2,
+            altura,
+            f"{altura:.4f} s",
+            ha="center",
+            va="bottom"
+        )
 
     guardar_grafica(
         "07_comparacion_rendimiento.png"

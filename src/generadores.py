@@ -62,6 +62,16 @@ def geometrica_transformada_inversa(p, rng):
 
     X representa el número de días hasta
     el primer día lluvioso.
+
+    Fórmula:
+
+        X = floor(
+                ln(1 - U)
+                /
+                ln(1 - p)
+            ) + 1
+
+    con U en [0, 1).
     """
 
     if p <= 0 or p > 1:
@@ -74,13 +84,16 @@ def geometrica_transformada_inversa(p, rng):
 
     u = rng.random()
 
-    x = math.ceil(
-        math.log(1 - u)
-        /
-        math.log(1 - p)
+    x = (
+        math.floor(
+            math.log(1 - u)
+            /
+            math.log(1 - p)
+        )
+        + 1
     )
 
-    return max(1, x)
+    return x
 
 
 def generar_muestra_transformada_inversa(
